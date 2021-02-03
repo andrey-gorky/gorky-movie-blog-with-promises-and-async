@@ -1,0 +1,114 @@
+<%- include("../partials/header.ejs"); %>
+
+	<div class="container">
+		<div class="row">
+
+
+			<div class="col-md-6">
+				<div class="mb-2 d-flex">
+					<h5 class="font-weight-normal">
+						<b>
+							<%= user.username %> Profile
+						</b>
+					</h5>
+				</div>
+				<div class="mb-3">
+					<img id="user-avatar" class="w-50" src="<%= user.avatar %>" alt="Profile Picture">
+				</div>
+				<div>
+					<% if (currentUser && user._id.equals(currentUser._id) || currentUser && currentUser.isAdmin) { %>
+						<a class="mb-3 btn btn-warning btn-sm" href="/users/<%= user._id %>/edit">EDIT ACCOUNT</a>
+						<% } %>
+				</div>
+
+				<div class="mb-2">
+					<ul class="list-unstyled">
+
+						<% if(user.firstName || user.lastName !=="" ) { %>
+							<li class="media">
+								<span class="w-30">
+									<b>
+										Name:
+									</b>
+								</span>
+								<label class="media-body">
+									<%= user.firstName + " " + user.lastName %>
+								</label>
+							</li>
+							<% } %>
+
+								<li class="media">
+									<span class="w-30">
+										<b>
+											Registered:
+										</b>
+									</span>
+									<label class="media-body">
+										<em>
+											<%= moment(user.createdAt).fromNow() %>
+										</em>
+									</label>
+								</li>
+
+								<li class="media">
+									<span class="w-30">
+										<b>
+											Movies:
+										</b>
+									</span>
+									<label class="media-body">
+
+										<%= userMoviesQty %>
+									</label>
+								</li>
+
+								<li class="media">
+									<span class="w-30">
+										<b>
+											Comments:
+										</b>
+									</span>
+									<label class="media-body">
+										<%= userCommentsQty %>
+									</label>
+								</li>
+
+					</ul>
+					<hr>
+				</div>
+			</div>
+
+
+
+			<div class="col-md-6">
+
+				<% if (userMovies.length>= 1) { %>
+
+					<h5 class="mb-3">
+						<b>
+							Added movies:
+						</b>
+					</h5>
+
+					<div class="row justify-content-start">
+						<% userMovies.reverse().forEach(function(movie) { %>
+							<div class="col-4 col-md-4 col-lg-3 mb-4">
+
+								<a href="/movies/<%= movie._id %>">
+									<img src="<%= movie.poster %>" class="card-img-top" alt="Movie Poster">
+								</a>
+
+							</div>
+							<% }); %>
+
+								<% } else { %>
+									<h4>No movies added yet</h4>
+									<% } %>
+					</div>
+			</div>
+
+
+		</div>
+	</div>
+
+	<%- include("../partials/footer.ejs"); %>

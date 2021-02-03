@@ -1,0 +1,182 @@
+<%- include("../partials/header.ejs"); %>
+
+	<% var visibilityDir="" ; %>
+		<% var visibilityWrit="" ; %>
+			<% (movieShow.director==="N/A" ) ? visibilityDir="hidden" : visibilityDir="visible" %>
+				<% (movieShow.writer==="N/A" ) ? visibilityWrit="hidden" : visibilityWrit="visible" %>
+
+					<div class="container main-container">
+						<section class="container-fluid main-page-content mb-5">
+
+							<div class="row">
+								<div class="col-12 text-center mb-3">
+									<div class="row justify-content-center">
+										<div class="col-10">
+											<div>
+												<h4>
+													<b>
+														<%= movieShow.title %>
+													</b>
+												</h4>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="row justify-content-center">
+								<div class="row col-md-6 px-0 justify-content-center mb-5 mb-md-0">
+									<img src="<%= movieShow.poster %>" alt="Movie Poster" class="movie-poster">
+								</div>
+								<div class="col-md-6 text-left text-md-left mb-3 mb-md-0">
+									<div class="row justify-content-start">
+										<div class="col-12">
+											<p class="mb-2">
+												<strong>Release Year:</strong>
+												<%= movieShow.year %>
+											</p>
+
+											<p class="mb-2">
+												<strong>Genre:</strong>
+												<%= movieShow.genre %>
+											</p>
+
+											<p class="mb-2" <%=visibilityDir %>>
+												<strong>Director:</strong>
+												<%= movieShow.director %>
+											</p>
+
+											<p class="mb-2" <%=visibilityWrit %>>
+												<strong>Writer:</strong>
+												<%= movieShow.writer %>
+											</p>
+
+											<p class="mb-2">
+												<strong>Cast:</strong>
+												<%= movieShow.cast %>
+											</p>
+
+											<p class="mb-2">
+												<strong>Plot:</strong>
+												<%= movieShow.plot %>
+											</p>
+
+											<!-- IMDB Rate and Link -->
+											<div class=" mb-2">
+												<span class="mb-0">
+													<strong>More info:</strong>
+												</span>
+												<a href="<%= movieShow.imdbLink %>" id="imdb-link" target="_blank">
+													<img
+														src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/IMDB_Logo_2016.svg/320px-IMDB_Logo_2016.svg.png"
+														alt="IMDB Logo" id="imdb-logo">
+												</a>
+												<span id="imdb-rating">
+													<strong>
+														<%= movieShow.imdbRating %>
+													</strong>
+												</span>
+											</div>
+
+											<p class="mb-2">
+												<strong>Added by:</strong>
+												<em>
+													<a href="/users/<%= movieShow.author.id._id %>">
+														<%= movieShow.author.id.username %>
+													</a>
+													<%= moment(movieShow.createdAt).fromNow() %>
+												</em>
+											</p>
+											<% if (currentUser && movieShow.author.id._id.equals(currentUser._id) || currentUser &&
+												currentUser.isAdmin) { %>
+												<a class="btn btn-warning btn-sm" href="/movies/<%= movieShow._id %>/edit">EDIT</a>
+												<form id="delete-form" action="/movies/<%= movieShow._id %>?_method=DELETE" method="POST">
+													<button class="btn btn-danger btn-sm">DELETE</button>
+												</form>
+												<% } %>
+										</div>
+									</div>
+								</div>
+							</div>
+
+
+						</section>
+
+						<section>
+						</section>
+
+
+						<div class="row">
+							<div class="col-12 mb-5">
+								<div class="row justify-content-center">
+									<div class="col-12 col-lg-10">
+										<hr>
+
+										<div class="card mb-5">
+											<div class="card-body">
+
+												<div class="text-right mb-3">
+													<a href="/movies/<%= movieShow._id %>/comments/new" class="btn btn-outline-primary">Leave
+														a Review</a>
+												</div>
+
+												<div class="row">
+													<% movieShow.comments.forEach(function(comment) { %>
+														<div class=" col-md-12 mb-4">
+															<hr>
+															<span class="float-left">
+																<a href="/users/<%= comment.author.id._id %>">
+																	<img src="<%= comment.author.id.avatar %>" class="comment-avatar mr-1" alt="">
+																</a>
+															</span>
+															<strong>
+																<a href="/users/<%= comment.author.id._id %>">
+																	<%= comment.author.id.username %>
+																</a>
+															</strong>
+															<span class="float-right">
+																<em>
+																	<%= moment(comment.createdAt).fromNow() %>
+																</em>
+															</span>
+															<div>
+																<!-- Logic for checking comment ownership and adding edit/del buttons -->
+																<% if (currentUser && comment.author.id._id.equals(currentUser._id) || currentUser &&
+																	currentUser.isAdmin) { %>
+																	<div class="float-right">
+																		<a class="btn btn-warning btn-sm"
+																			href="/movies/<%= movieShow._id %>/comments/<%= comment._id %>/edit">EDIT</a>
+																		<form id="delete-form"
+																			action="/movies/<%= movieShow._id %>/comments/<%= comment._id %>?_method=DELETE"
+																			method="POST">
+																			<button class="btn btn-danger btn-sm">DELETE</button>
+																		</form>
+																	</div>
+																	<% } %>
+															</div>
+															<div class="user-comment">
+																<p class="card-text">
+																	<%= comment.text %>
+																</p>
+															</div>
+
+														</div>
+														<% }); %>
+												</div>
+
+											</div>
+
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+
+
+					</div>
+
+
+
+					<%- include("../partials/footer.ejs"); %>

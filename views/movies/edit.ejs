@@ -1,0 +1,126 @@
+<%- include("../partials/header.ejs"); %>
+
+	<% var visibilityDir="" ; %>
+		<% var visibilityWrit="" ; %>
+			<% (editMovie.director==="N/A" ) ? visibilityDir="hidden" : visibilityDir="visible" %>
+				<% (editMovie.writer==="N/A" ) ? visibilityWrit="hidden" : visibilityWrit="visible" %>
+
+					<div class="row">
+
+						<div class="col-md-12 text-left">
+							<h3 style="text-align: center;">Edit <%= editMovie.title %> Info</h3>
+						</div>
+
+						<div class="col-xs-12 col-md-7 my-25 mx-auto">
+							<form class="needs-validation" action="/movies/<%= editMovie._id %>?_method=PUT" method="post" novalidate>
+
+								<div class="form-group">
+									<label for="title" class="font-weight-bold">Title</label>
+									<input id="title" class="form-control" type="text" name="movie[title]" value="<%= editMovie.title %>"
+										required>
+									<div class="invalid-feedback">
+										Title is required
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="releaseYear" class="font-weight-bold">Release year</label>
+									<input id="releaseYear" class="form-control" type="text" name="movie[year]"
+										value="<%= editMovie.year %>" required>
+									<div class="invalid-feedback">
+										Release year is required
+									</div>
+								</div>
+
+
+
+
+								<div class="form-group">
+									<label for="genre" class="font-weight-bold">Genre</label>
+									<input id="genre" class="form-control" type="text" name="movie[genre]" value="<%= editMovie.genre %>"
+										required>
+									<div class="invalid-feedback">
+										Genre info is required
+									</div>
+								</div>
+
+								<div class="form-group" <%=visibilityDir %>>
+									<label for="director" class="font-weight-bold">Director</label>
+									<input id="director" class="form-control" type="text" name="movie[director]"
+										value="<%= editMovie.director %>" required>
+									<div class="invalid-feedback">
+										Director info is required
+									</div>
+								</div>
+
+								<div class="form-group" <%=visibilityWrit %>>
+									<label for="writer" class="font-weight-bold">Writer</label>
+									<input id="writer" class="form-control" type="text" name="movie[writer]"
+										value="<%= editMovie.writer %>" required>
+									<div class="invalid-feedback">
+										Writer info is required
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="cast" class="font-weight-bold">Cast</label>
+									<input id="cast" class="form-control" type="text" name="movie[cast]" value="<%= editMovie.cast %>"
+										required>
+									<div class="invalid-feedback">
+										Cast info is required
+									</div>
+								</div>
+
+
+
+
+
+								<div class="form-group">
+									<label for="poster" class="font-weight-bold">Poster url</label>
+									<input id="poster" class="form-control" type="text" name="movie[poster]"
+										value="<%= editMovie.poster %>" required>
+									<div class="invalid-feedback">
+										Poster url is required
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="imdbRating" class="font-weight-bold">IMDB Rating</label>
+									<input id="imdbRating" class="form-control" type="text" name="movie[imdbRating]"
+										value="<%= editMovie.imdbRating %>" required>
+									<div class="invalid-feedback">
+										<a href="https://www.imdb.com/">IMDB</a> rating is required
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label for="imdbLink" class="font-weight-bold">IMDB Link</label>
+									<input id="imdbLink" class="form-control" type="text" name="movie[imdbLink]"
+										value="<%= editMovie.imdbLink %>" required>
+									<div class="invalid-feedback">
+										Movie <a href="https://www.imdb.com/">IMDB</a> link is required
+									</div>
+								</div>
+
+								<div class="form-group mb-5">
+									<label for="plot" class="font-weight-bold">Plot</label>
+									<textarea class="form-control" id="plot" rows="5" name="movie[plot]"
+										required><%= editMovie.plot %></textarea>
+									<div class="invalid-feedback">
+										Plot is required
+									</div>
+								</div>
+
+								<div class="form-group">
+									<button class="btn btn-lg btn-success btn-block" type="submit">Submit</button>
+								</div>
+
+							</form>
+
+							<a href="/movies">Go to Movies</a>
+
+						</div>
+
+					</div>
+
+					<%- include("../partials/footer.ejs"); %>

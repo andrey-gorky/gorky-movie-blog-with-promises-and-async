@@ -1,0 +1,99 @@
+body {
+  background-color: #000;
+}
+
+#landing-header {
+  z-index: 1;
+  position: relative;
+  text-align: center;
+	padding-top: 40vh;
+	text-shadow: 2px 2px 2px rgba(0,0,0,0.3);
+
+}
+
+#welcome-title {
+text-shadow: 2px 8px 6px rgba(0,0,0,0.2),
+						0px -5px 35px rgba(255,255,255,0.3);
+}
+
+#landing-header h1 {
+  color: #fff;
+}
+
+.slideshow {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	z-index: 0;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.slideshow li {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-size: cover;
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	opacity: 0;
+	z-index: 0;
+	animation: imageAnimation 50s linear infinite;
+}
+
+.slideshow li:nth-child(1) {
+	background-image: url(https://cdn.hipwallpaper.com/i/13/17/NVAws3.jpg);
+}
+.slideshow li:nth-child(2) {
+	background-image: url(https://wallpaperaccess.com/full/1679635.jpg);
+	animation-delay: 10s;
+}
+.slideshow li:nth-child(3) {
+	background-image: url(https://cameronscookware.com/wp-content/uploads/2019/12/cinema-wallpaper-best-of-beautiful-theater-wallpapers-2013-2014-wallpaper-hd-ideas-of-cinema-wallpaper.jpg);
+	animation-delay: 20s;
+}
+.slideshow li:nth-child(4) {
+	background-image: url(https://cdn.wallpapersafari.com/77/47/6Uisej.jpg);
+	animation-delay: 30s;
+}
+.slideshow li:nth-child(5) {
+	background-image: url(https://cdn.hipwallpaper.com/i/2/41/2z0JTo.jpg);
+	animation-delay: 40s;
+}
+
+@keyframes imageAnimation {
+
+	0% {
+		opacity: 0;
+		animation-timing-function: ease-in;
+	}
+	10% {
+		opacity: 1;
+		animation-timing-function: ease-out;
+	}
+	20% {
+		opacity: 1;
+	}
+	30% {
+		opacity: 0;
+	}
+
+}
+
+/* Older browser support - .no-cssanimations class added by modernizr */
+.no-cssanimations .slideshow li {
+	opacity: 1;
+}
+
+.flash-message {
+	z-index: 2;
+	opacity: 1;
+	position: relative;
+	margin: 5% auto 0;
+	width: 99%;
+}

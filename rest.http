@@ -1,0 +1,21 @@
+@AUTH_TOKEN = Bearer dasdasd
+
+
+### Welcome Page
+GET http://localhost:3000/
+
+### All Movie Page
+GET http://localhost:3000/movies
+
+### Search New Movie
+GET http://localhost:3000/movies/search-new?username=andrey&password=zxc
+
+
+### New Movie Page
+GET http://localhost:3000/movies/new
+Content-Type: application/json
+
+{
+	"search": "https://www.imdb.com/title/tt1849115/?ref_=fn_al_tt_2"
+}
+

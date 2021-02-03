@@ -1,0 +1,113 @@
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+body {
+	/* margin-bottom by footer height */
+	margin-bottom: 45px;
+	padding-bottom: 45px;
+}
+
+.thumb img {
+	width: 100%;
+}
+
+.thumb {
+	padding: 0;
+}
+
+.thumb .caption-full {
+	padding: 9px;
+}
+
+#delete-form {
+	display: inline;
+}
+
+.footer {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	/* Set the fixed height of the footer */
+	height: 45px;
+	background-color: #f5f5f5;
+}
+
+.movie-poster {
+	max-width: 300px;
+	max-height: 440px;
+}
+
+/** PROFILE SETUP */
+.media {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: start;
+	-ms-flex-align: start;
+	align-items: flex-start;
+}
+
+.w-30 {
+	width: 35% !important;
+}
+
+.user-avatar {
+	max-width: 300px;
+}
+
+.movie-title {
+	color: black;
+	text-decoration: none;
+}
+
+.movie-title:hover {
+	color: #696969		;
+	text-decoration: none;
+}
+
+#imdb-link {
+	text-decoration: none;
+}
+
+#imdb-link:hover {
+	text-decoration: none;
+	opacity: 0.8;
+}
+
+#imdb-logo {
+	height: 30px;
+	padding-left: 5px;
+}
+
+#imdb-rating {
+	font-size: 1.2rem;
+	margin-left: 10px;
+}
+
+.comment-avatar {
+  /* vertical-align: middle; */
+  width: 50px;
+	height: 50px;
+	object-fit: cover;
+	background-position: top center;
+	border-radius: 50%;
+}
+
+.user-comment {
+	padding-left: 3.4rem;
+}
+
+.link {
+	text-decoration: none;
+	font-size: 12px;
+}
+
+.link:hover {
+	text-decoration: none;
+}
+
+.btn-outline-primary {
+	font-size: 1rem;
+}

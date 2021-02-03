@@ -1,0 +1,47 @@
+<%- include("../partials/header.ejs"); %>
+
+	<div class="row">
+		<div class="col-md-12 text-left">
+			<h1 style="text-align: center">Sign Up Page</h1>
+		</div>
+		<div class="col-xs-12 col-md-7 my-25 mx-auto">
+			<form class="form-signin needs-validation" action="/register" method="post" novalidate>
+				<div class="form-group">
+					<input class="form-control" type="text" name="username" placeholder="username" autofocus required>
+					<div class="invalid-feedback">
+						Username is required
+					</div>
+				</div>
+				<div class="form-group">
+					<input class="form-control" type="password" name="password" placeholder="password" required>
+					<div class="invalid-feedback">
+						Password is required
+					</div>
+				</div>
+
+				<div class="form-group">
+					<input class="form-control" type="text" name="firstName" placeholder="First Name">
+				</div>
+				<div class="form-group">
+					<input class="form-control" type="text" name="lastName" placeholder="Last Name">
+				</div>
+				<div class="form-group">
+					<input class="form-control" type="email" name="email" placeholder="e-mail" required>
+					<div class="invalid-feedback">
+						Appropriate email address is required
+					</div>
+				</div>
+				<div class="form-group">
+					<input class="form-control" type="text" name="avatar" placeholder="Avatar url">
+				</div>
+
+				<div class="form-group">
+					<button class="btn btn-lg btn-success btn-block">Submit</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+
+	<%- include("../partials/footer.ejs"); %>

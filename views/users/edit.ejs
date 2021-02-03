@@ -1,0 +1,53 @@
+<%- include("../partials/header.ejs"); %>
+
+	<div class="row">
+		<div class="col-md-12 text-left">
+			<h1 style="text-align: center">Edit Your Account Details</h1>
+		</div>
+		<!-- <div style="width: 30%; margin: 25px auto;"> -->
+		<div class="col-xs-12 col-md-7 my-25 mx-auto">
+			<form class="form-signin needs-validation" action="/users/<%= editUser._id %>?_method=PUT" method="post"
+				novalidate>
+
+				<div class="form-group">
+					<label for="userFirstName" class="font-weight-bold">First Name</label>
+					<input class="form-control" type="text" name="user[firstName]" value="<%= editUser.firstName %>">
+				</div>
+
+				<div class="form-group">
+					<label for="userLastName" class="font-weight-bold">Last Name</label>
+					<input class="form-control" type="text" name="user[lastName]" value="<%= editUser.lastName %>">
+				</div>
+
+				<div class="form-group">
+					<label for="userEmail" class="font-weight-bold">E-mail</label>
+					<input class="form-control" type="email" name="user[email]" value="<%= editUser.email %>" required>
+					<div class="invalid-feedback">
+						Appropriate email address is required
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="avatarURL" class="font-weight-bold">Avatar Link</label>
+					<input class="form-control" type="text" name="user[avatar]" value="<%= editUser.avatar %>">
+				</div>
+
+				<div class="form-group">
+					<button class="btn btn-lg btn-success btn-block">Submit</button>
+				</div>
+
+			</form>
+
+			<div>
+				<a href="/password-reset" class="link mb-5">
+					<button type="button" class="btn btn-lg btn-outline-primary btn-block mt-5">
+						Change Account Password.
+					</button>
+				</a>
+			</div>
+
+		</div>
+	</div>
+
+
+	<%- include("../partials/footer.ejs"); %>

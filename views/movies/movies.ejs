@@ -1,0 +1,35 @@
+<%- include("../partials/header.ejs"); %>
+
+	<header class="jumbotron">
+		<h1>Gorky Movie Blog</h1>
+		<p>View our hand-picked Movies, add one, leave a comment or join a discussion</p>
+		<p>
+			<a href="/movies/search-new" class="btn btn-primary btn-lg">Add new Movie</a><br><br>
+		</p>
+	</header>
+
+
+	<div class="row justify-content-center justify-content-md-start">
+		<% moviesEjs.reverse().forEach(function(movie) { %>
+			<!-- !!!!!!!!!!!!!!!!! -->
+			<div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4" style="max-width: 300px;">
+
+				<div class="card thumb mb-5 mb-md-3">
+					<a href="/movies/<%= movie._id %>">
+						<img src="<%= movie.poster %>" class="card-img-top" alt="Movie Poster">
+					</a>
+					<div class="card-body">
+						<h5 class="card-title">
+							<a href="/movies/<%= movie._id %>" class="movie-title">
+								<%= movie.title %>
+							</a>
+						</h5>
+					</div>
+				</div>
+
+			</div>
+			<% }); %>
+	</div>
+
+
+	<%- include("../partials/footer.ejs"); %>
