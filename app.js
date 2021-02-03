@@ -104,7 +104,7 @@ app.use((err, req, res, next) => {
 });
 // =====================================================
 
-
-app.listen(process.env.PORT, function () {
-	console.log("Server is running on port " + process.env.PORT + "...");
+const port = process.env.PORT || 3000;
+app.listen(port, function () {
+	console.log("Server is running on port " + port + "...");
 });

@@ -1,12 +1,13 @@
 {
-	"name": "s30-yelp-adding-mangoose",
+	"name": "gorkymovieblog",
 	"version": "1.0.0",
 	"description": "",
 	"main": "app.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node app.js"
 	},
-	"author": "",
+	"author": "Andrey Gorky",
 	"license": "ISC",
 	"dependencies": {
 		"async": "^3.2.0",

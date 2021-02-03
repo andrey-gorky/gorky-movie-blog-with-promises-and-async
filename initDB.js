@@ -1,6 +1,7 @@
 // MONGOOSE CONNECTION
 const mongoose = require("mongoose");
-const dbUrl = "mongodb://localhost/gorky-movie-blog";
+const dbUrl = process.env.DB_URL;
+// "mongodb://localhost/gorky-movie-blog";
 // "mongodb://localhost/gorky-movie-blog"
 module.exports = function () {
 	mongoose.set("runValidators", true);
