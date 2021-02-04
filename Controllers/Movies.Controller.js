@@ -41,14 +41,14 @@ module.exports = {
 		if (req.query.search === undefined || req.query.search.includes("www.imdb.com/title/tt") === false) {
 			return next(new AppError(
 				400,
-				"Please, enter a valid movie url with relevant movie ID from IMDB. Example 'www.imdb.com/title/tt000000'.",
+				"Please, enter a valid movie url with relevant movie ID from IMDB. Url should contain 'imdb.com/title/tt000000'.",
 				"/movies/search-new"
 			));
 		}
 
 		// Taking IMDB movie ID from inserted link
 		let imdbId = req.query.search;
-		imdbId = imdbId.split("www.imdb.com/title/")[1].split("/")[0];
+		imdbId = imdbId.split("imdb.com/title/")[1].split("/")[0];
 		let url = "http://www.omdbapi.com/?i=" + imdbId + "&plot=full&apikey=" + process.env.OMDB_API_KEY;
 
 		request(url, function (error, response, body) {
