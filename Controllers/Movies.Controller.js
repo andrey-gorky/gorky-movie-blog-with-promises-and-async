@@ -38,7 +38,7 @@ module.exports = {
 
 	getMoviesNewPage: function (req, res, next) {
 
-		if (req.query.search === undefined || req.query.search.includes("www.imdb.com/title/tt") === false) {
+		if (req.query.search === undefined || req.query.search.includes("imdb.com/title/tt") === false) {
 			return next(new AppError(
 				400,
 				"Please, enter a valid movie url with relevant movie ID from IMDB. Url should contain 'imdb.com/title/tt000000'.",
