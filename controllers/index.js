@@ -9,8 +9,8 @@ const AppError = require("../AppErrors");
 
 let checkIfUnique = function (err) {
 	if (err.code === 11000) {
-		var keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
-		err.message = "A user with the given '" + keyValue + "' is already registered.";
+		let keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
+		return err.message = `A user with the given '${keyValue}' is already registered.`;
 	}
 }
 
@@ -50,7 +50,7 @@ module.exports = {
 				));
 			} else {
 				passport.authenticate("local")(req, res, function () {
-					req.flash("flash-success", "Welcome " + req.body.username);
+					req.flash("flash-success", `Welcome ${req.body.username}`);
 					res.redirect("/movies");
 				});
 			}
@@ -92,7 +92,7 @@ module.exports = {
 				var userCommentsQty;
 				Movies.find().where("author.id").equals(foundUser._id).exec(function (err, foundMovies) {
 					if (err) {
-						console.log("couldn't find() " + foundUser.username + "'s Movies. User_id = " + foundUser._id);
+						console.log(`couldn't find() ${foundUser.username}'s Movies. User_id = ${foundUser._id}`);
 						userMoviesQty = "N/A";
 					} else {
 						userMoviesQty = foundMovies.length;
@@ -100,7 +100,7 @@ module.exports = {
 
 					Comments.find().where("author.id").equals(foundUser._id).exec(function (err, foundComments) {
 						if (err) {
-							console.log("couldn't find() " + foundUser.username + "'s Comments. User_id = " + foundUser._id);
+							console.log(`couldn't find() ${foundUser.username}'s Comments. User_id = ${foundUser._id}`);
 							userCommentsQty = "N/A";
 						} else {
 							userCommentsQty = foundComments.length;
@@ -168,23 +168,30 @@ module.exports = {
 					to: user.email,
 					from: process.env.GMB_EMAIL_ADRESS,
 					subject: "Gorky Movie Blog password reset",
-					html: "<p>Hi " + user.username + ",</p> " +
-						"<p>You are receiveng this because you (or someone else) have requested the reset of the password for your account.</p>" +
-						"<p>Please copy and paste the following link to a search bar to complete the password recovery process.</p>\n\n" +
-						"<p>http://" + req.headers.host + "/new-password/" + token + "</p>\n\n" + //! req.headers.host = need to be changed for site address in future
-						"<p>If you did not request password reset, please ignore this email and your password will remain unchanged.</p>"
+					html: `Hi ${user.username}, <br>
+								You are receiveng this because you (or someone else) have requested the reset of the password for your account.
+					To complete the password recovery process follow the link below.<br><br>
+									http://${req.headers.host}/new-password/${token}<br><br>
+										If you did not request password reset, please ignore this email and your password will remain unchanged.`
+
+					// html: "<p>Hi " + user.username + ",</p> " +
+					// 	"<p>You are receiveng this because you (or someone else) have requested the reset of the password for your account.</p>" +
+					// 	"<p>Please copy and paste the following link to a search bar to complete the password recovery process.</p>\n\n" +
+					// 	"<p>http://" + req.headers.host + "/new-password/" + token + "</p>\n\n" + //! req.headers.host = need to be changed for site address in future
+					// 	"<p>If you did not request password reset, please ignore this email and your password will remain unchanged.</p>"
 				};
 				smtpTransport.sendMail(mailOptions, function (err) {
-					console.log("Email for password reset was sent to " + user.email);
-					req.flash("flash-success", "An email has been sent to " + user.email + " with further instructions. Please, don't hesitate to check for it in spam :)");
+					console.log(`Email for password reset was sent to ${user.email}`);
+					req.flash("flash-success", `An email has been sent to ${user.email} with further instructions. Please, don't hesitate to check for it in spam :)`);
 					done(err, "done");
 				});
 			}
 		], function (err) {
 			if (err) {
+				console.log(err)
 				return next(new AppError(
 					500,
-					"Something went wrong while generating password reset email for you. Try again later, or contact " + process.env.GMB_EMAIL_ADRESS,
+					`Something went wrong while generating password reset email for you. Try again later, or contact ${process.env.GMB_EMAIL_ADRESS}`,
 					"/password-reset"
 				));
 			}
@@ -248,13 +255,13 @@ module.exports = {
 					to: user.email,
 					from: process.env.GMB_EMAIL_ADRESS,
 					subject: "Gorky Movie Blog password has been changed",
-					text: "Hello " + user.username + ",\n\n" +
-						"This is the confirmation letter for your account password reset. Have a nice day!"
+					text: `Dear ${user.username},<br>
+					Please be informed, that your account pssword has been updated. Have a nice day!`
 				};
 				smtpTransport.sendMail(mailOptions, function (err) {
-					console.log("Password was updated for " + user.email);
+					console.log(`Password was updated for ${user.email}`);
 					req.flash("flash-success", "Success! Your password has been changed.");
-					res.redirect("/users/" + user._id);
+					res.redirect(`/users/${user._id}`);
 					done(err);
 				});
 			}
@@ -262,7 +269,7 @@ module.exports = {
 			if (err) {
 				return next(new AppError(
 					500,
-					"Something went wrong while updating your password. Try again later, or contact " + process.env.GMB_EMAIL_ADRESS,
+					`Something went wrong while updating your password. Try again later, or contact ${process.env.GMB_EMAIL_ADRESS}`,
 					"/password-reset"
 				));
 			}
@@ -308,10 +315,10 @@ module.exports = {
 				return next(new AppError(
 					400,
 					err.message,
-					"/users/" + req.params.id
+					`/users/${req.params.id}`
 				));
 			} else {
-				res.redirect("/users/" + req.params.id);
+				res.redirect(`/users/${req.params.id}`);
 			}
 
 		});

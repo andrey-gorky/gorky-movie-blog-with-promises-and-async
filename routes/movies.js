@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const middleware = require("../middleware"); //In the folder js file named index so it will be automatically used
-const MoviesController = require("../Controllers/Movies.Controller")
+const MoviesController = require("../controllers/movies")
 
 //All MOVIES ROUTE
 router.get("/", MoviesController.getAllMoviesPage);

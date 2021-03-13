@@ -9,7 +9,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const middleware = require("../middleware");
 
-const IndexController = require("../Controllers/Index.Controller");
+const IndexController = require("../controllers");
 
 //WELCOME PAGE
 router.get("/", IndexController.getWelcomePage);

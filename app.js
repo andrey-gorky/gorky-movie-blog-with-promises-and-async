@@ -18,7 +18,7 @@ const commentsRoutes = require("./routes/comments"),
 	moviesRoutes = require("./routes/movies"),
 	indexRoutes = require("./routes/index");
 
-const dbUrl = process.env.DB_URL || "mongodb://localhost/gorky-movie-blog";
+const dbUrl = process.env.DB_URL;
 
 // Init DB
 require("./initDB.js")();

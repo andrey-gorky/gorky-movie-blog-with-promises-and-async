@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const middleware = require("../middleware"); //In the folder js file named index so it will be automatically used
-const CommentsController = require("../Controllers/Comments.Controller")
+const CommentsController = require("../controllers/comments")
 
 //==============================================
 //*COMMENTS ROUTES NEW AND CREATE
