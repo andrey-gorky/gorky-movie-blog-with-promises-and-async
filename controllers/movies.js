@@ -2,11 +2,31 @@ const Movies = require("../models/movie");
 const request = require("request");
 const AppError = require("../AppErrors");
 
-let checkIfUnique = function (err, newData) {
-	if (err.code === 11000) {
-		var keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
-		err.message = "Movie with the given '" + keyValue + "' already exists.";
-	}
+const checkIfUnique = (err, newData) => {
+	return new Promise((resolve, reject) => {
+		if (err.code === 11000) {
+			var keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
+			err.message = `Movie with the given ${keyValue} already exists.`;
+		}
+		resolve();
+	});
+}
+
+let extractIMDBid = queryUrl => {
+
+	return new Promise((resolve, reject) => {
+		if (queryUrl === undefined || queryUrl.includes("imdb.com/title/tt") === false) {
+			reject("dasd");
+		}
+		// Taking IMDB movie ID from inserted link
+		let imdbId = queryUrl;
+		imdbId = imdbId.split("imdb.com/title/")[1].split("/")[0];
+		if (imdbId.length > 10) {
+			reject("dasd");
+		}
+		resolve(`http://www.omdbapi.com/?i=${imdbId}&plot=full&apikey=${process.env.OMDB_API_KEY}`);
+	});
+
 }
 
 // Object.entries(foundMovie).forEach(movie => { console.log(movie.author.id) });
@@ -14,42 +34,38 @@ let checkIfUnique = function (err, newData) {
 module.exports = {
 
 	//GET ALL MOVIES PAGE
-	getAllMoviesPage: function (req, res, next) {
+	getAllMoviesPage: async (req, res, next) => {
 		//GET DATA FROM THE DB
-		Movies.find({}, function (err, allMovies) {
-			if (err) {
-				console.log("Couldn't find Movies. Route: '/movies'");
-				return next(new AppError(
-					500,
-					"Couldn't find Movies. Please, try again later or contact the Administration via gorky.movie.blog@gmail.com.",
-					"/"
-				));
-			} else {
-				res.render("movies/movies.ejs", { moviesEjs: allMovies });
-				next();
-			}
-		});
+		try {
+			const allMovies = await Movies.find({});
+			res.render("movies/movies.ejs", { moviesEjs: allMovies });
+			next();
+		} catch (err) {
+			console.log("Couldn't find Movies. Route: '/movies'");
+			return next(new AppError(
+				500,
+				"Couldn't find Movies. Please, try again later or contact the Administration via gorky.movie.blog@gmail.com.",
+				"/"
+			));
+		}
 	},
 
 	//ADD NEW MOVIE USING OMDB API
-	getMoviesSearchNewPage: function (req, res) {
+	getMoviesSearchNewPage: (req, res) => {
 		res.render("movies/search-new.ejs");
 	},
 
-	getMoviesNewPage: function (req, res, next) {
-
-		if (req.query.search === undefined || req.query.search.includes("imdb.com/title/tt") === false) {
+	getMoviesNewPage: async (req, res, next) => {
+		let url;
+		try {
+			url = await extractIMDBid(req.query.search)
+		} catch (e) {
 			return next(new AppError(
 				400,
-				"Please, enter a valid movie url with relevant movie ID from IMDB. Url should contain 'imdb.com/title/tt000000'.",
+				"Please, enter a valid movie url with relevant movie ID from IMDB. For example 'imdb.com/title/tt000000/'.",
 				"/movies/search-new"
 			));
 		}
-
-		// Taking IMDB movie ID from inserted link
-		let imdbId = req.query.search;
-		imdbId = imdbId.split("imdb.com/title/")[1].split("/")[0];
-		let url = "http://www.omdbapi.com/?i=" + imdbId + "&plot=full&apikey=" + process.env.OMDB_API_KEY;
 
 		request(url, function (error, response, body) {
 			if (!error && response.statusCode == 200) {
@@ -72,6 +88,28 @@ module.exports = {
 				));
 			}
 		});
+
+		// request(url, function (error, response, body) {
+		// 	if (!error && response.statusCode == 200) {
+		// 		let movieData = JSON.parse(body);
+		// 		if (movieData["Title"] == undefined) {
+		// 			console.log("Bad response from OMDB. movieData == undefined. Route: '/movies/new' ", error.message);
+		// 			return next(new AppError(
+		// 				400,
+		// 				"Couldn't receive information from IMDB. Try another link or contact the Administration.",
+		// 				"/movies/search-new"
+		// 			));
+		// 		}
+		// 		res.render("movies/new.ejs", { movieData: movieData });
+		// 	} else {
+		// 		console.log("Bad request to OMDB. Route: '/movies/new'");
+		// 		return next(new AppError(
+		// 			400,
+		// 			"Couldn't receive information from IMDB. Try another link or contact the Administration.",
+		// 			"/movies/search-new"
+		// 		));
+		// 	}
+		// });
 
 	},
 

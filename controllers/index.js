@@ -7,7 +7,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const AppError = require("../AppErrors");
 
-let checkIfUnique = function (err) {
+const checkIfUnique = err => {
 	if (err.code === 11000) {
 		let keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
 		return err.message = `A user with the given '${keyValue}' is already registered.`;
