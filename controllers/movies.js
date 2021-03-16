@@ -27,14 +27,6 @@ const extractIMDBid = queryUrl => {
 	});
 }
 
-const fetchOmdbApiData = url => {
-	return new Promise((resolve, reject) => {
-		const response = axios.get(url);
-		resolve(response);
-	});
-
-}
-
 // Object.entries(foundMovie).forEach(movie => { console.log(movie.author.id) });
 
 module.exports = {
@@ -63,7 +55,8 @@ module.exports = {
 
 	getMoviesNewPage: async (req, res, next) => {
 
-		let url;
+		let url = undefined;
+
 		try {
 			url = await extractIMDBid(req.query.search)
 		} catch (e) {
@@ -73,8 +66,9 @@ module.exports = {
 				"/movies/search-new"
 			));
 		}
+
 		try {
-			const movieData = await fetchOmdbApiData(url);
+			const movieData = await axios.get(url);
 			res.render("movies/new.ejs", { movieData: movieData.data });
 		} catch (e) {
 			return next(new AppError(
