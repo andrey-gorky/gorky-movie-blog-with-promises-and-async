@@ -1,6 +1,6 @@
 const Movies = require("../models/movie");
-const request = require("request");
 const AppError = require("../AppErrors");
+const axios = require("axios");
 
 const checkIfUnique = (err, newData) => {
 	return new Promise((resolve, reject) => {
@@ -12,8 +12,7 @@ const checkIfUnique = (err, newData) => {
 	});
 }
 
-let extractIMDBid = queryUrl => {
-
+const extractIMDBid = queryUrl => {
 	return new Promise((resolve, reject) => {
 		if (queryUrl === undefined || queryUrl.includes("imdb.com/title/tt") === false) {
 			reject("dasd");
@@ -25,6 +24,13 @@ let extractIMDBid = queryUrl => {
 			reject("dasd");
 		}
 		resolve(`http://www.omdbapi.com/?i=${imdbId}&plot=full&apikey=${process.env.OMDB_API_KEY}`);
+	});
+}
+
+const fetchOmdbApiData = url => {
+	return new Promise((resolve, reject) => {
+		const response = axios.get(url);
+		resolve(response);
 	});
 
 }
@@ -56,6 +62,7 @@ module.exports = {
 	},
 
 	getMoviesNewPage: async (req, res, next) => {
+
 		let url;
 		try {
 			url = await extractIMDBid(req.query.search)
@@ -66,50 +73,16 @@ module.exports = {
 				"/movies/search-new"
 			));
 		}
-
-		request(url, function (error, response, body) {
-			if (!error && response.statusCode == 200) {
-				let movieData = JSON.parse(body);
-				if (movieData["Title"] == undefined) {
-					console.log("Bad response from OMDB. movieData == undefined. Route: '/movies/new' ", error.message);
-					return next(new AppError(
-						400,
-						"Couldn't receive information from IMDB. Try another link or contact the Administration.",
-						"/movies/search-new"
-					));
-				}
-				res.render("movies/new.ejs", { movieData: movieData });
-			} else {
-				console.log("Bad request to OMDB. Route: '/movies/new'");
-				return next(new AppError(
-					400,
-					"Couldn't receive information from IMDB. Try another link or contact the Administration.",
-					"/movies/search-new"
-				));
-			}
-		});
-
-		// request(url, function (error, response, body) {
-		// 	if (!error && response.statusCode == 200) {
-		// 		let movieData = JSON.parse(body);
-		// 		if (movieData["Title"] == undefined) {
-		// 			console.log("Bad response from OMDB. movieData == undefined. Route: '/movies/new' ", error.message);
-		// 			return next(new AppError(
-		// 				400,
-		// 				"Couldn't receive information from IMDB. Try another link or contact the Administration.",
-		// 				"/movies/search-new"
-		// 			));
-		// 		}
-		// 		res.render("movies/new.ejs", { movieData: movieData });
-		// 	} else {
-		// 		console.log("Bad request to OMDB. Route: '/movies/new'");
-		// 		return next(new AppError(
-		// 			400,
-		// 			"Couldn't receive information from IMDB. Try another link or contact the Administration.",
-		// 			"/movies/search-new"
-		// 		));
-		// 	}
-		// });
+		try {
+			const movieData = await fetchOmdbApiData(url);
+			res.render("movies/new.ejs", { movieData: movieData.data });
+		} catch (e) {
+			return next(new AppError(
+				400,
+				"Couldn't receive information from IMDB. Try another link or contact the Administration.",
+				"/movies/search-new"
+			));
+		}
 
 	},
 
