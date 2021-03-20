@@ -27,6 +27,20 @@ const extractIMDBid = queryUrl => {
 	});
 }
 
+const newMovieData = request => {
+	// Get data from the form and add it to the Movies' DB
+	return new Promise((resolve, reject) => {
+		let newMovie = request.body.newMovie
+		newMovie.imdbLink = `https://www.imdb.com/title/${request.body.newMovie.imdbID}`;
+		newMovie.cast = `${newMovie.cast}, etc.`;
+		newMovie.author = {
+			id: request.user._id,
+			username: request.user.username
+		}
+		resolve(newMovie);
+	});
+}
+
 // Object.entries(foundMovie).forEach(movie => { console.log(movie.author.id) });
 
 module.exports = {
@@ -56,7 +70,6 @@ module.exports = {
 	getMoviesNewPage: async (req, res, next) => {
 
 		let url = undefined;
-
 		try {
 			url = await extractIMDBid(req.query.search)
 		} catch (e) {
@@ -81,18 +94,12 @@ module.exports = {
 	},
 
 	// POST NEW MOVIE INTO DB
-	createNewMovies: function (req, res, next) {
+	createNewMovies: async (req, res, next) => {
 		//Get data from the form and add it to the Movies DB
-		let newMovie = req.body.newMovie
-		newMovie.imdbLink = "https://www.imdb.com/title/" + req.body.newMovie.imdbID;
-		newMovie.cast = newMovie.cast + ", etc.";
-		newMovie.author = {
-			id: req.user._id,
-			username: req.user.username
-		}
+		const newMovie = await newMovieData(req);
 
 		// CREATE NEW MOVIE AND SAVE INTO DB
-		Movies.create(newMovie, function (err, movie) {
+		Movies.create(newMovie, err => {
 			if (err) {
 				checkIfUnique(err, newMovie);
 				return next(new AppError(
@@ -106,6 +113,7 @@ module.exports = {
 				res.redirect("/movies");
 			}
 		});
+
 	},
 
 
@@ -140,25 +148,22 @@ module.exports = {
 	},
 
 	//UPDATE ROUTES
-	getMoviesEditPage: function (req, res, next) {
+	getMoviesEditPage: async (req, res, next) => {
 
-		Movies.findById(req.params.id, function (err, editMovie) {
+		const movie = await Movies.findById(req.params.id)
 
-			if (!editMovie || err) {
-				return next(new AppError(
-					400,
-					"Could not render movie edit page. Try again later or contact the Administration",
-					"/movies"
-				));
-			} else {
-				res.render("movies/edit.ejs", { editMovie: editMovie });
-			}
+		if (!movie) {
+			return next(new AppError(
+				400,
+				"Could not find that movie",
+				"/movies"
+			));
+		}
 
-		});
-
+		res.render("movies/edit.ejs", { editMovie: movie });
 	},
 
-	updateMovies: function (req, res, next) {
+	updateMovies: async (req, res, next) => {
 		//Find and update required Movie
 		Movies.findByIdAndUpdate(req.params.id, req.body.movie, function (err, editMovie) {
 
@@ -177,20 +182,10 @@ module.exports = {
 		});
 	},
 
-	deleteMovies: function (req, res, next) {
-		Movies.findByIdAndRemove(req.params.id, function (err, deleteMovie) {
-
-			if (!deleteMovie || err) {
-				return next(new AppError(
-					400,
-					err.message,
-					"/movies"
-				));
-			} else {
-				res.redirect("/movies");
-			}
-
-		});
+	deleteMovies: async (req, res, next) => {
+		await Movies.findByIdAndDelete(req.params.id);
+		req.flash("flash-success", "Movie successfully deleted");
+		res.redirect("/movies");
 	}
 
 };
