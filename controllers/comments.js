@@ -6,109 +6,96 @@ module.exports = {
 
 	//==============================================
 	//*COMMENTS PAGES NEW AND CREATE
-	getCommentsNewPage: function (req, res, next) {
-		Movies.findById(req.params.id, function (err, foundMovie) {
-			if (!foundMovie || err) {
-				console.log(err);
-				return next(new AppError(
-					400,
-					"Couldn't find movie to create comment for it.",
-					"/movies"
-				));
-			} else {
-				res.render("comments/new.ejs", { movieShow: foundMovie });
-			}
-		});
+	getCommentsNewPage: async (req, res, next) => {
+		const foundMovie = await Movies.findById(req.params.id);
+		if (!foundMovie) {
+			return next(new AppError(
+				400,
+				"Bad request.",
+				"/movies"
+			));
+		}
+		res.render("comments/new.ejs", { movieShow: foundMovie });
 	},
 
-	createNewComment: function (req, res, next) {
-		//* Find movie with an id
-		Movies.findById(req.params.id, function (err, foundMovie) {
-			if (!foundMovie || err) {
+	createNewComment: async (req, res, next) => {
+		try {
+			// Find relevant movie by id
+			const movie = await Movies.findById(req.params.id);
+			const newComment = new Comments(req.body.comment);
+			//add username and  username ID to the comment
+			newComment.author.id = req.user._id;
+			newComment.author.username = req.user.username;
+			//save to the comment and movie models 
+			movie.comments.push(newComment);
+			await newComment.save();
+			await movie.save();
+			// redirect to the page of required movie with success message
+			req.flash("flash-success", "Comment created.");
+			res.redirect(`/movies/${movie._id}`);
+		} catch (err) {
+			if (err) {
 				return next(new AppError(
 					400,
-					"Couldn't find movie to create comment for it.",
-					"/movies"
+					"Cannot create new comment. Probably bad request",
+					"back"
 				));
-			} else {
-				// create new comment
-				// bound new comment with the movie
-				var newComment = req.body.comment;
-				Comments.create(newComment, function (err, comment) {
-					if (err) {
-						console.log(err);
-						return next(new AppError(
-							500,
-							"Couldn't create a comment.",
-							"/movies/" + foundMovie._id
-						));
-					} else {
-						//add username and ID to the comment
-						comment.author.id = req.user._id;
-						comment.author.username = req.user.username;
-						//save the comment
-						comment.save();
-						foundMovie.comments.push(comment);
-						foundMovie.save();
-						req.flash("flash-success", "Comment created.");
-						// redirect to the page of required movie
-						res.redirect("/movies/" + foundMovie._id);
-					}
-				});
 			}
-		});
-
+		}
 	},
 	//==============================================
 
 	//==============================================
 	//*EDIT and UPDATE COMMENT
-	getCommentsEditPage: function (req, res, next) {
-		Comments.findById(req.params.comment_id, function (err, foundComment) {
-			if (!foundComment || err) {
-				return next(new AppError(
-					400,
-					"Couldn't find movie.",
-					"back"
-				));
-			} else {
-				res.render("comments/edit.ejs", { movie_id: req.params.id, comment: foundComment });
-			}
-		});
+	getCommentsEditPage: async (req, res, next) => {
+		const foundComment = await Comments.findById(req.params.comment_id);
+		if (!foundComment) {
+			return next(new AppError(
+				400,
+				"Cannot find comment.",
+				"back"
+			));
+		}
+		res.render("comments/edit.ejs", { movie_id: req.params.id, comment: foundComment });
 	},
 
-	updateComments: function (req, res, next) {
-		Comments.findByIdAndUpdate(req.params.comment_id, req.body.comment, function (err, editComment) {
-			if (!editComment || err) {
-				console.log(err);
+	updateComments: async (req, res, next) => {
+		try {
+			const comment = await Comments.findByIdAndUpdate(req.params.comment_id, req.body.comment);
+			await comment.save();
+			req.flash("flash-success", "Comment updated");
+			res.redirect(`/movies/${req.params.id}`);
+		} catch (err) {
+			if (err) {
 				return next(new AppError(
-					500,
-					"Couldn't update the comment.",
+					400,
+					"Cannot update the comment.",
 					"back"
 				));
-			} else {
-				req.flash("flash-success", "Comment updated");
-				res.redirect("/movies/" + req.params.id);
 			}
-		});
+		}
 	},
 	//==============================================
 
 	//DELETE COMMENT
-	deleteComments: function (req, res, next) {
-		Comments.findByIdAndRemove(req.params.comment_id, function (err, deleteComment) {
-			if (!deleteComment || err) {
-				console.log(err);
-				return next(new AppError(
-					400,
-					"Couldn't find comment to be deleted :)",
-					"/movies"
-				));
-			} else {
-				req.flash("flash-success", "Comment deleted");
-				res.redirect("/movies/" + req.params.id);
-			}
-		});
+	deleteComments: async (req, res, next) => {
+		try {
+			const movieId = req.params.id;
+			const commentId = req.params.comment_id;
+			await Comments.findByIdAndDelete(commentId);
+
+			// Remove current comment_id mentioning from the movie
+			await Movies.findByIdAndUpdate(movieId, { $pull: { comments: commentId } });
+			req.flash("flash-success", "Comment deleted");
+			res.redirect(`/movies/${movieId}`);
+		} catch (err) {
+			return next(new AppError(
+				400,
+				"Cannot delete a comment",
+				"/movies"
+			));
+		}
+
 	}
 
 }

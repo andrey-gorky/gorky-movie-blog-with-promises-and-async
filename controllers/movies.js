@@ -99,7 +99,7 @@ module.exports = {
 		const newMovie = await newMovieData(req);
 
 		// CREATE NEW MOVIE AND SAVE INTO DB
-		Movies.create(newMovie, err => {
+		await Movies.create(newMovie, err => {
 			if (err) {
 				checkIfUnique(err, newMovie);
 				return next(new AppError(

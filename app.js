@@ -75,8 +75,8 @@ app.use(function (req, res, next) {
 //==================================================
 
 
-app.use(express.static(__dirname + "/partials"));
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(`${__dirname}/partials`));
+app.use(express.static(`${__dirname}/public`));
 app.use(methodOverride("_method"));
 
 
