@@ -2,11 +2,13 @@ const Movies = require("../models/movie");
 const AppError = require("../AppErrors");
 const axios = require("axios");
 
-const checkIfUnique = (err, newData) => {
+const checkIfUnique = (err, movieData) => {
 	return new Promise((resolve, reject) => {
 		if (err.code === 11000) {
-			var keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
-			err.message = `Movie with the given ${keyValue} already exists.`;
+			// var keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
+			// it would be nice to add a link to existing movie
+			err.message = `Movie with such data already exists.`;
+			resolve(err.message);
 		}
 		resolve();
 	});
@@ -15,13 +17,13 @@ const checkIfUnique = (err, newData) => {
 const extractIMDBid = queryUrl => {
 	return new Promise((resolve, reject) => {
 		if (queryUrl === undefined || queryUrl.includes("imdb.com/title/tt") === false) {
-			reject("dasd");
+			reject();
 		}
 		// Taking IMDB movie ID from inserted link
 		let imdbId = queryUrl;
 		imdbId = imdbId.split("imdb.com/title/")[1].split("/")[0];
 		if (imdbId.length > 10) {
-			reject("dasd");
+			reject();
 		}
 		resolve(`http://www.omdbapi.com/?i=${imdbId}&plot=full&apikey=${process.env.OMDB_API_KEY}`);
 	});
@@ -70,27 +72,27 @@ module.exports = {
 	getMoviesNewPage: async (req, res, next) => {
 
 		let url = undefined;
-		try {
-			url = await extractIMDBid(req.query.search)
-		} catch (e) {
-			return next(new AppError(
-				400,
-				"Please, enter a valid movie url with relevant movie ID from IMDB. For example 'imdb.com/title/tt000000/'.",
-				"/movies/search-new"
-			));
-		}
 
-		try {
-			const movieData = await axios.get(url);
-			res.render("movies/new.ejs", { movieData: movieData.data });
-		} catch (e) {
-			return next(new AppError(
-				400,
-				"Couldn't receive information from IMDB. Try another link or contact the Administration.",
-				"/movies/search-new"
-			));
-		}
+		await extractIMDBid(req.query.search)
+			.then(result => url = result)
+			.catch((err) => {
+				return next(new AppError(
+					400,
+					"Please, enter a valid movie url with relevant movie ID from IMDB. For example 'imdb.com/title/tt000000/'.",
+					"/movies/search-new"
+				));
+			})
 
+		await axios.get(url)
+			.then(response => res.render("movies/new.ejs", { movieData: response.data }))
+			.catch((err) => {
+				console.log(err)
+				return next(new AppError(
+					400,
+					"Couldn't receive information from IMDB. Try another link or contact the Administration.",
+					"/movies/search-new"
+				));
+			});
 	},
 
 	// POST NEW MOVIE INTO DB
@@ -99,21 +101,20 @@ module.exports = {
 		const newMovie = await newMovieData(req);
 
 		// CREATE NEW MOVIE AND SAVE INTO DB
-		await Movies.create(newMovie, err => {
-			if (err) {
-				checkIfUnique(err, newMovie);
+		await Movies.create(newMovie)
+			.then(() => {
+				//Redirect back to the /movies page
+				req.flash("flash-success", "Your movie was added.");
+				res.redirect("/movies");
+			})
+			.catch(async (err) => {
+				await checkIfUnique(err, newMovie);
 				return next(new AppError(
 					400,
 					err.message,
 					"/movies/search-new"
 				));
-			} else {
-				//Redirect back to the /movies page
-				req.flash("flash-success", "Your movie was added.");
-				res.redirect("/movies");
-			}
-		});
-
+			});
 	},
 
 
@@ -151,7 +152,6 @@ module.exports = {
 	getMoviesEditPage: async (req, res, next) => {
 
 		const movie = await Movies.findById(req.params.id)
-
 		if (!movie) {
 			return next(new AppError(
 				400,
@@ -159,33 +159,35 @@ module.exports = {
 				"/movies"
 			));
 		}
-
 		res.render("movies/edit.ejs", { editMovie: movie });
 	},
 
 	updateMovies: async (req, res, next) => {
+		const movieId = req.params.id;
+		const movie = req.body.movie;
 		//Find and update required Movie
-		Movies.findByIdAndUpdate(req.params.id, req.body.movie, function (err, editMovie) {
-
-			if (!editMovie || err) {
-				checkIfUnique(err, editMovie);
+		await Movies.findByIdAndUpdate(movieId, movie)
+			.then(() => {
+				req.flash("flash-success", "Movie info updated.");
+				res.redirect(`/movies/${movieId}`);
+			})
+			.catch(async (err) => {
+				await checkIfUnique(err, movie);
 				return next(new AppError(
 					400,
 					err.message,
-					"/movies/" + req.params.id
+					`/movies/${movieId}`
 				));
-			} else {
-				req.flash("flash-success", "Movie info updated.");
-				res.redirect("/movies/" + req.params.id);
-			}
+			});
 
-		});
 	},
 
 	deleteMovies: async (req, res, next) => {
-		await Movies.findByIdAndDelete(req.params.id);
-		req.flash("flash-success", "Movie successfully deleted");
-		res.redirect("/movies");
+		await Movies.findByIdAndDelete(req.params.id)
+			.then(() => {
+				req.flash("flash-success", "Movie successfully deleted");
+				res.redirect("/movies");
+			});
 	}
 
 };

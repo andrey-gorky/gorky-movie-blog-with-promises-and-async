@@ -7,59 +7,68 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const AppError = require("../AppErrors");
 
+const newUserData = request => {
+	return new Promise((resolve, reject) => {
+		let newUser = new User({
+			username: request.body.username,
+			firstName: request.body.firstName,
+			lastName: request.body.lastName,
+			email: request.body.email,
+			avatar: request.body.avatar
+		});
+		if (newUser.avatar === "") { newUser.avatar = process.env.DEFAULT_AVATAR }
+		resolve(newUser);
+	});
+}
+
+
 const checkIfUnique = err => {
-	if (err.code === 11000) {
-		let keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
-		return err.message = `A user with the given '${keyValue}' is already registered.`;
-	}
+	return new Promise((resolve, reject) => {
+		if (err.code === 11000) {
+			let keyValue = Object.keys(err.keyValue).map(key => key).join(", ");
+			err.message = `A user with the given '${keyValue}' already registered.`;
+			resolve(err.messege);
+		}
+		resolve();
+	});
 }
 
 
 module.exports = {
 
 	//WELCOME PAGE
-	getWelcomePage: function (req, res) {
-		res.render("landing.ejs");
-	},
+	getWelcomePage: (req, res) => res.render("landing.ejs"),
 
 	//==============================================
 	//*AUTHENTICATION
 
 	//REGISTER ROUTES
-	getRegisterPage: function (req, res) {
-		res.render("authentication/register.ejs");
-	},
+	getRegisterPage: (req, res) => res.render("authentication/register.ejs"),
 
-	registerUser: function (req, res, next) {
-		var newUser = new User({
-			username: req.body.username,
-			firstName: req.body.firstName,
-			lastName: req.body.lastName,
-			email: req.body.email,
-			avatar: req.body.avatar
-		});
-		if (newUser.avatar === "") { newUser.avatar = process.env.DEFAULT_AVATAR }
-
-		User.register(newUser, req.body.password, function (err, newUser) {
-			if (err) {
-				checkIfUnique(err);
+	registerUser: async (req, res, next) => {
+		let newUser = await newUserData(req)
+		User.register(newUser, req.body.password)
+			.then(() => {
+				passport.authenticate("local")
+					(req, res, () => {
+						req.flash("flash-success", `Welcome ${newUser.username}`);
+						res.redirect("/movies");
+					});
+			})
+			.catch(async (err) => {
+				await checkIfUnique(err);
 				return next(new AppError(
-					400,
+					401,
 					err.message,
 					"/register"
 				));
-			} else {
-				passport.authenticate("local")(req, res, function () {
-					req.flash("flash-success", `Welcome ${req.body.username}`);
-					res.redirect("/movies");
-				});
-			}
-		});
+			});
+
 	},
 
 
 	//LOGIN
-	getLoginPage: function (req, res) {
+	getLoginPage: (req, res) => {
 		res.render("authentication/login.ejs");
 	},
 
@@ -70,7 +79,7 @@ module.exports = {
 
 
 	//LOGOUT
-	logoutUser: function (req, res) {
+	logoutUser: (req, res) => {
 		req.logout();
 		req.flash("flash-success", "Successfully logged out!");
 		return res.redirect("/movies");
@@ -79,51 +88,50 @@ module.exports = {
 
 
 	//GET USER PROFILE PAGE
-	getUsersProfilePage: function (req, res, next) {
-		User.findById(req.params.id, function (err, foundUser) {
-			if (!foundUser || err) {
-				return next(new AppError(
-					400,
-					"Couldn't find user.",
-					"/movies"
-				));
-			} else {
-				var userMoviesQty;
-				var userCommentsQty;
-				Movies.find().where("author.id").equals(foundUser._id).exec(function (err, foundMovies) {
-					if (err) {
-						console.log(`couldn't find() ${foundUser.username}'s Movies. User_id = ${foundUser._id}`);
-						userMoviesQty = "N/A";
-					} else {
-						userMoviesQty = foundMovies.length;
-					}
+	getUsersProfilePage: async (req, res, next) => {
+		let foundUser = undefined;
+		let userMoviesfound = undefined;
+		let userCommentsQty = undefined;
 
-					Comments.find().where("author.id").equals(foundUser._id).exec(function (err, foundComments) {
-						if (err) {
-							console.log(`couldn't find() ${foundUser.username}'s Comments. User_id = ${foundUser._id}`);
-							userCommentsQty = "N/A";
-						} else {
-							userCommentsQty = foundComments.length;
-						}
+		try {
 
-						res.render("users/show.ejs", {
-							user: foundUser,
-							userMovies: foundMovies,
-							userMoviesQty: userMoviesQty,
-							userCommentsQty: userCommentsQty
-						});
+			await User
+				.findById(req.params.id)
+				.then(user => foundUser = user);
 
-					});
+			await Movies
+				.find()
+				.where("author.id")
+				.equals(foundUser._id)
+				.then(movies => userMoviesfound = movies);
 
-				});
-			}
-		});
+			await Comments
+				.find()
+				.where("author.id")
+				.equals(foundUser._id)
+				.then(comments => userCommentsQty = comments.length);
+
+			res.render("users/show.ejs", {
+				user: foundUser,
+				userMovies: userMoviesfound,
+				userMoviesQty: userMoviesfound.length,
+				userCommentsQty: userCommentsQty
+			});
+
+		} catch (err) {
+			return next(new AppError(
+				400,
+				"Unable to load user data.",
+				"/movies"
+			));
+		}
+
 	},
 
 
 	//*==============================================
 	//*PASSWORD RESET
-	getPasswordResetPage: function (req, res) {
+	getPasswordResetPage: (req, res) => {
 		res.render("authentication/password-reset.ejs");
 	},
 
@@ -169,16 +177,9 @@ module.exports = {
 					from: process.env.GMB_EMAIL_ADRESS,
 					subject: "Gorky Movie Blog password reset",
 					html: `Hi ${user.username}, <br>
-								You are receiveng this because you (or someone else) have requested the reset of the password for your account.
-					To complete the password recovery process follow the link below.<br><br>
-									http://${req.headers.host}/new-password/${token}<br><br>
-										If you did not request password reset, please ignore this email and your password will remain unchanged.`
-
-					// html: "<p>Hi " + user.username + ",</p> " +
-					// 	"<p>You are receiveng this because you (or someone else) have requested the reset of the password for your account.</p>" +
-					// 	"<p>Please copy and paste the following link to a search bar to complete the password recovery process.</p>\n\n" +
-					// 	"<p>http://" + req.headers.host + "/new-password/" + token + "</p>\n\n" + //! req.headers.host = need to be changed for site address in future
-					// 	"<p>If you did not request password reset, please ignore this email and your password will remain unchanged.</p>"
+					You are receiveng this because you (or someone else) have requested the reset of the password for your account. To complete the password recovery process follow the link below.<br><br>
+					http://${req.headers.host}/new-password/${token}<br><br>
+					If you did not request password reset, please ignore this email and your password will remain unchanged.`
 				};
 				smtpTransport.sendMail(mailOptions, function (err) {
 					console.log(`Email for password reset was sent to ${user.email}`);
@@ -199,7 +200,7 @@ module.exports = {
 		});
 	},
 
-	getNewPasswordPage: function (req, res, next) {
+	getNewPasswordPage: async (req, res, next) => {
 		User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function (err, user) {
 			if (!user) {
 				return next(new AppError(
